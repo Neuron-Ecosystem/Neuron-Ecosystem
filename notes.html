@@ -1,0 +1,413 @@
+    <script>
+// Принудительный редирект на HTTPS
+if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+    location.replace(https:${location.href.substring(location.protocol.length)});
+}
+</script>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuron Notes - Умные заметки</title>
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg: #0f0f23;
+            --card-bg: #1a1b2e;
+            --text: #ffffff;
+            --text-secondary: #a0a0c0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            height: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: var(--card-bg);
+            padding: 1rem;
+            border-right: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .new-note-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .notes-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .note-item {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .note-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .note-item.active {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .note-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .note-preview {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .note-time {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .editor {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+        }
+
+        .editor-input {
+            border: none;
+            background: transparent;
+            color: var(--text);
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .editor-textarea {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: none;
+            font-family: inherit;
+            padding: 0.5rem;
+        }
+
+        .editor-input:focus, .editor-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            color: var(--text);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.05);
+            color: var(--text);
+        }
+
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+            margin-left: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <a href="index.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+            
+            <button class="new-note-btn" onclick="createNewNote()" style="margin: 1rem 0;">
+                <i class="fas fa-plus"></i> Новая заметка
+            </button>
+
+            <input type="text" class="search-input" placeholder="Поиск заметок..." onkeyup="searchNotes(this.value)">
+
+            <div class="notes-list" id="notesList">
+                <!-- Список заметок -->
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <h1><i class="fas fa-sticky-note"></i> Neuron Notes</h1>
+                <div id="editorActions" style="display: none;">
+                    <button class="delete-btn" onclick="deleteCurrentNote()">
+                        <i class="fas fa-trash"></i> Удалить
+                    </button>
+                </div>
+            </div>
+
+            <div class="editor" id="editor" style="display: none;">
+                <input type="text" class="editor-input" id="noteTitle" placeholder="Заголовок" oninput="saveNote()">
+                <textarea class="editor-textarea" id="noteContent" placeholder="Начните писать..." oninput="saveNote()"></textarea>
+            </div>
+
+            <div class="empty-state" id="emptyState">
+                <i class="fas fa-sticky-note" style="font-size: 4rem; margin-bottom: 1rem;"></i>
+                <h3>Нет заметок</h3>
+                <p>Создайте свою первую заметку</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
+        const notes = gun.get('neuron-notes-v2');
+        
+        let currentNotes = JSON.parse(localStorage.getItem('neuron-notes')) || [];
+        let currentNoteId = null;
+        let saveTimeout = null;
+
+        function createNewNote() {
+            const newNote = {
+                id: Date.now() + Math.random(),
+                title: 'Новая заметка',
+                content: '',
+                timestamp: new Date().toLocaleString(),
+                updated: Date.now()
+            };
+
+            currentNotes.unshift(newNote);
+            saveNotes();
+            renderNotes();
+            openNote(newNote.id);
+        }
+
+        function renderNotes() {
+            const notesList = document.getElementById('notesList');
+            notesList.innerHTML = '';
+
+            currentNotes.forEach(note => {
+                const noteItem = document.createElement('div');
+                noteItem.className = `note-item ${note.id === currentNoteId ? 'active' : ''}`;
+                noteItem.onclick = () => openNote(note.id);
+                
+                noteItem.innerHTML = `
+                    <div class="note-title">${note.title || 'Без названия'}</div>
+                    <div class="note-preview">${note.content.substring(0, 100) || 'Пустая заметка...'}</div>
+                    <div class="note-time">${note.timestamp}</div>
+                `;
+                
+                notesList.appendChild(noteItem);
+            });
+
+            if (currentNotes.length === 0) {
+                notesList.innerHTML = '<div style="color: var(--text-secondary); text-align: center; padding: 2rem;">Нет заметок</div>';
+            }
+        }
+
+        function openNote(noteId) {
+            const note = currentNotes.find(n => n.id === noteId);
+            if (!note) return;
+
+            currentNoteId = noteId;
+            
+            document.getElementById('editor').style.display = 'flex';
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('editorActions').style.display = 'block';
+            
+            document.getElementById('noteTitle').value = note.title || '';
+            document.getElementById('noteContent').value = note.content || '';
+            
+            renderNotes();
+        }
+
+        function saveNote() {
+            if (!currentNoteId) return;
+
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                const noteIndex = currentNotes.findIndex(n => n.id === currentNoteId);
+                if (noteIndex !== -1) {
+                    currentNotes[noteIndex].title = document.getElementById('noteTitle').value;
+                    currentNotes[noteIndex].content = document.getElementById('noteContent').value;
+                    currentNotes[noteIndex].timestamp = new Date().toLocaleString();
+                    currentNotes[noteIndex].updated = Date.now();
+                    
+                    saveNotes();
+                    renderNotes();
+
+                    // Синхронизация с P2P сетью
+                    notes.set(currentNotes[noteIndex]);
+                }
+            }, 1000);
+        }
+
+        function deleteCurrentNote() {
+            if (!currentNoteId) return;
+
+            if (confirm('Удалить эту заметку?')) {
+                currentNotes = currentNotes.filter(n => n.id !== currentNoteId);
+                saveNotes();
+                renderNotes();
+                
+                document.getElementById('editor').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('editorActions').style.display = 'none';
+                
+                currentNoteId = null;
+            }
+        }
+
+        function searchNotes(query) {
+            const filteredNotes = currentNotes.filter(note => 
+                note.title.toLowerCase().includes(query.toLowerCase()) ||
+                note.content.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            const notesList = document.getElementById('notesList');
+            notesList.innerHTML = '';
+
+            filteredNotes.forEach(note => {
+                const noteItem = document.createElement('div');
+                noteItem.className = `note-item ${note.id === currentNoteId ? 'active' : ''}`;
+                noteItem.onclick = () => openNote(note.id);
+                
+                noteItem.innerHTML = `
+                    <div class="note-title">${note.title || 'Без названия'}</div>
+                    <div class="note-preview">${note.content.substring(0, 100) || 'Пустая заметка...'}</div>
+                    <div class="note-time">${note.timestamp}</div>
+                `;
+                
+                notesList.appendChild(noteItem);
+            });
+
+            if (filteredNotes.length === 0) {
+                notesList.innerHTML = '<div style="color: var(--text-secondary); text-align: center; padding: 2rem;">Заметки не найдены</div>';
+            }
+        }
+
+        function saveNotes() {
+            localStorage.setItem('neuron-notes', JSON.stringify(currentNotes));
+        }
+
+        // Получение заметок из P2P сети
+        notes.map().on(function(note, id) {
+            if (note && id) {
+                const existingIndex = currentNotes.findIndex(n => n.id === note.id);
+                if (existingIndex === -1) {
+                    currentNotes.unshift(note);
+                } else if (note.updated > currentNotes[existingIndex].updated) {
+                    currentNotes[existingIndex] = note;
+                }
+                
+                saveNotes();
+                renderNotes();
+                
+                if (currentNoteId === note.id) {
+                    openNote(note.id);
+                }
+            }
+        });
+
+        // Синхронизация между вкладками
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'neuron-notes') {
+                currentNotes = JSON.parse(e.newValue || '[]');
+                renderNotes();
+            }
+        });
+
+        // Инициализация
+        renderNotes();
+    </script>
+</body>
+</html>
