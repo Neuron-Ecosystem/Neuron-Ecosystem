@@ -1,0 +1,277 @@
+    <script>
+// Принудительный редирект на HTTPS
+if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+    location.replace(https:${location.href.substring(location.protocol.length)});
+}
+</script>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuron Digital Studio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg: #0f0f23;
+            --card-bg: #1a1b2e;
+            --text: #ffffff;
+            --text-secondary: #a0a0c0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            color: var(--text);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .studio-hero {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInUp 1s ease;
+        }
+
+        .studio-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .info-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .info-card h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .service-item {
+            background: rgba(255,255,255,0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .service-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .cta-section {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border-radius: 15px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .cta-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .feature-list li {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Назад к порталу
+            </a>
+            <h1>Neuron Digital Studio</h1>
+        </div>
+
+        <div class="studio-hero">
+            <div class="studio-icon">
+                <i class="fas fa-palette"></i>
+            </div>
+            <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Студия цифрового дизайна</h2>
+            <p style="color: var(--text-secondary); font-size: 1.2rem;">
+                Создаем цифровые продукты, которые работают
+            </p>
+        </div>
+
+        <div class="info-card">
+            <h3><i class="fas fa-rocket"></i> О нас</h3>
+            <p>Neuron Digital Studio - это молодая и амбициозная студия, специализирующаяся на создании современных цифровых решений. Мы объединяем креативный дизайн и передовые технологии.</p>
+        </div>
+
+        <div class="info-card">
+            <h3><i class="fas fa-cogs"></i> Наши услуги</h3>
+            <div class="services-grid">
+                <div class="service-item">
+                    <i class="fas fa-paint-brush" style="color: var(--primary); font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                    <h4>Веб-дизайн</h4>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Современные адаптивные сайты</p>
+                </div>
+                <div class="service-item">
+                    <i class="fas fa-mobile-alt" style="color: var(--primary); font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                    <h4>UI/UX Дизайн</h4>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Интуитивные интерфейсы</p>
+                </div>
+                <div class="service-item">
+                    <i class="fas fa-bullhorn" style="color: var(--primary); font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                    <h4>Брендинг</h4>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Узнаваемый стиль бренда</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3><i class="fas fa-star"></i> Почему мы?</h3>
+            <ul class="feature-list">
+                <li>Используем современные технологии и AI</li>
+                <li>Быстрые сроки реализации проектов</li>
+                <li>Доступные цены для стартапов и малого бизнеса</li>
+                <li>Полное сопровождение проекта</li>
+                <li>Кросс-платформенные решения</li>
+            </ul>
+        </div>
+
+        <div class="cta-section">
+            <h3 style="margin-bottom: 1rem;">Хотите узнать больше?</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                Посетите наш основной сайт для получения подробной информации о услугах, портфолио и контактах.
+            </p>
+            <a href="http://neurondigital.tilda.ws" target="_blank" class="cta-button">
+                <i class="fas fa-external-link-alt"></i> Перейти на сайт студии
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Плавная анимация появления элементов
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.info-card, .cta-section');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.2}s`;
+            });
+        });
+    </script>
+</body>
+</html>
