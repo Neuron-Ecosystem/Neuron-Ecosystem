@@ -20,6 +20,7 @@
             --card-bg: #1a1b2e;
             --text: #ffffff;
             --text-secondary: #a0a0c0;
+            --success: #10b981;
         }
 
         body {
@@ -46,13 +47,38 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            position: relative; /* Для размещения кнопки доната */
         }
 
         .header {
             text-align: center;
             margin-bottom: 4rem;
             animation: fadeInUp 1s ease;
+            position: relative; /* Для правильного позиционирования кнопки */
         }
+
+        /* --- Стили для кнопки доната --- */
+        .donate-button {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background 0.3s ease, transform 0.2s ease;
+            z-index: 10;
+        }
+
+        .donate-button:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+        /* ------------------------------- */
 
         .logo {
             font-size: 4rem;
@@ -235,6 +261,70 @@
             opacity: 1;
         }
 
+        /* --- Стили для модального окна (Донат) --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none; /* Скрыто по умолчанию */
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform: translateY(-50px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-text {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .modal-button {
+            background: var(--success); /* Зеленый цвет для кнопки */
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 700;
+            transition: background 0.3s ease, transform 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .modal-button:hover {
+            background: #0d9471;
+            transform: scale(1.05);
+        }
+        /* ------------------------------------------- */
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -269,6 +359,18 @@
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
+            }
+            
+            .header {
+                /* Сдвигаем все содержимое, чтобы кнопка в правом верхнем углу не перекрывала */
+                padding-top: 50px; 
+            }
+
+            .donate-button {
+                top: 10px; /* Сдвигаем кнопку чуть ниже на мобильных */
+                right: 10px;
+                padding: 8px 12px;
+                font-size: 0.9rem;
             }
             
             .services-grid {
@@ -310,6 +412,10 @@
     
     <div class="container">
         <div class="header">
+            <button class="donate-button" onclick="showDonateModal()">
+                <i class="fas fa-heart" style="margin-right: 5px;"></i> Поддержать проект
+            </button>
+            
             <div class="logo">
                 <i class="fas fa-brain"></i>
             </div>
@@ -344,7 +450,6 @@
                 <p class="service-desc">Узнайте о нашей студии дизайна и разработки</p>
             </a>
 
-            <!-- Новая карточка для Neuron Tools -->
             <a href="https://neuron-ecosystem.github.io/Neuron-Tools/" class="service-card card-animation" target="_blank">
                 <div class="service-icon">
                     <i class="fas fa-tools"></i>
@@ -353,7 +458,6 @@
                 <p class="service-desc">Коллекция полезных инструментов для повседневных задач</p>
             </a>
 
-            <!-- Новая карточка для Neuron Calendar -->
             <a href="https://neuron-ecosystem.github.io/Calendar/" class="service-card card-animation" target="_blank">
                 <div class="service-icon">
                     <i class="fas fa-calendar-alt"></i>
@@ -362,7 +466,6 @@
                 <p class="service-desc">Умный планировщик с событиями и напоминаниями</p>
             </a>
 
-            <!-- Новая карточка для Neuron Study -->
             <a href="https://neuron-ecosystem.github.io/Neuron-Study/" class="service-card card-animation" target="_blank">
                 <div class="service-icon">
                     <i class="fas fa-graduation-cap"></i>
@@ -371,7 +474,6 @@
                 <p class="service-desc">Умное приложение для студентов с расписанием, заметками и переводчиком</p>
             </a>
 
-            <!-- Новая карточка для Neuron Budget -->
             <a href="https://neuron-ecosystem.github.io/Neuron-Budget/" class="service-card card-animation" target="_blank">
                 <div class="service-icon">
                     <i class="fas fa-wallet"></i>
@@ -380,7 +482,6 @@
                 <p class="service-desc">Умный трекер финансов с аналитикой и целями накопления</p>
             </a>
 
-            <!-- Новая карточка для Game Hub -->
             <a href="https://neuron-ecosystem.github.io/Game-Hub/" class="service-card card-animation" target="_blank">
                 <div class="service-icon">
                     <i class="fas fa-gamepad"></i>
@@ -389,7 +490,6 @@
                 <p class="service-desc">Коллекция увлекательных игр для развития и развлечения</p>
             </a>
 
-            <!-- Новая карточка для Password Generator -->
             <a href="https://neuron-ecosystem.github.io/Password-Generator/" class="service-card card-animation" target="_blank">
                 <div class="service-icon">
                     <i class="fas fa-key"></i>
@@ -399,31 +499,25 @@
             </a>
         </div>
 
-        <!-- Блок соцсетей -->
         <div class="social-section">
             <h3 class="social-title">Мы в социальных сетях</h3>
             <div class="social-grid">
-                <!-- Telegram -->
                 <a href="https://t.me/neuron_ecosystem" class="social-button telegram" target="_blank" onclick="event.stopPropagation()">
                     <i class="fab fa-telegram social-icon"></i>
                 </a>
                 
-                <!-- VK -->
                 <a href="https://vk.com/club233118101?from=groups" class="social-button vk" target="_blank" onclick="event.stopPropagation()">
                     <i class="fab fa-vk social-icon"></i>
                 </a>
                 
-                <!-- Сайт -->
                 <a href="https://neuron-p2p.ru" class="social-button web" target="_blank" onclick="event.stopPropagation()">
                     <i class="fas fa-globe social-icon"></i>
                 </a>
                 
-                <!-- Email -->
                 <a href="#" class="social-button email" id="email-button" onclick="copyEmail(event)">
                     <i class="fas fa-envelope social-icon"></i>
                 </a>
                 
-                <!-- TikTok -->
                 <a href="https://tiktok.com/@neuron_eco" class="social-button tiktok" target="_blank" onclick="event.stopPropagation()">
                     <i class="fab fa-tiktok social-icon"></i>
                 </a>
@@ -431,11 +525,19 @@
         </div>
     </div>
 
-    <!-- Уведомление о копировании -->
+    <div id="donate-modal" class="modal" onclick="closeDonateModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <p class="modal-text">Эти средства пойдут на развитие проекта❤️</p>
+            <a id="support-link" href="https://yoomoney.ru/to/4100119394883694" target="_blank" class="modal-button" onclick="closeDonateModal(event)">
+                Поддержать
+            </a>
+        </div>
+    </div>
+
     <div class="copy-notification" id="copy-notification">Email скопирован!</div>
 
     <script>
-        // Частицы для фона
+        // ... (Код для частиц и анимаций остается без изменений)
         function createParticles() {
             const particles = document.getElementById('particles');
             for (let i = 0; i < 50; i++) {
@@ -491,8 +593,24 @@
                 copyNotification.classList.add('show');
                 setTimeout(() => {
                     copyNotification.classList.remove('show');
-                }, 2000);
+                } , 2000);
             });
+        }
+
+        // --- ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА (ДОНАТ) ---
+        const donateModal = document.getElementById('donate-modal');
+
+        function showDonateModal() {
+            donateModal.classList.add('show');
+            document.body.style.overflow = 'hidden'; // Запретить скролл фона
+        }
+
+        function closeDonateModal(event) {
+            // Закрываем только если клик был вне содержимого модала (на фоне)
+            if (event.target === donateModal || event.currentTarget.id === 'support-link') {
+                donateModal.classList.remove('show');
+                document.body.style.overflow = ''; // Восстановить скролл
+            }
         }
 
         // Запуск анимаций
