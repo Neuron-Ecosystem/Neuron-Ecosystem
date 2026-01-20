@@ -1,678 +1,313 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta name="google-site-verification" content="zTRMbq_EEBnB6z8uwS0m8IgC3xnHG5MNia7SPEAE9nw" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neuron Ecosystem</title>
+    <title>Neuron Ecosystem | Main node</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --bg: #0f0f23;
-            --card-bg: #1a1b2e;
-            --text: #ffffff;
-            --text-secondary: #a0a0c0;
-            --success: #10b981;
+            --bg: #05050a;
+            --accent: #ff8c00;
+            --accent-glow: rgba(255, 140, 0, 0.4);
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text: #e6edf3;
+            --text-dim: #a0a0c0;
         }
 
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Segoe UI', system-ui, sans-serif;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            overflow-x: hidden; 
             min-height: 100vh;
-            overflow-x: hidden;
         }
 
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
+        #canvas { position: fixed; top: 0; left: 0; z-index: -1; filter: blur(0.4px); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+        /* HEADER ANIMATION */
+        .header-ui {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;
+            backdrop-filter: blur(20px); padding: 20px 30px; border-radius: 24px;
+            border: 1px solid var(--glass-border); background: var(--glass);
+            animation: slideDown 0.8s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            position: relative; /* Для размещения кнопки доната */
+        .logo-box { display: flex; align-items: center; gap: 15px; }
+        .logo-text { font-size: 1.5rem; font-weight: 800; letter-spacing: 5px; color: var(--accent); text-transform: uppercase; text-shadow: 0 0 15px var(--accent-glow); }
+
+        .nav-actions { display: flex; gap: 15px; align-items: center; }
+
+        /* Кнопки с эффектом свечения */
+        .btn-donate {
+            background: var(--accent); color: #000; border: none; padding: 12px 24px; 
+            border-radius: 14px; font-weight: 800; cursor: pointer; transition: all 0.4s;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+        }
+        .btn-donate:hover { transform: translateY(-2px); box-shadow: 0 8px 25px var(--accent-glow); }
+
+        .search-trigger {
+            background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border);
+            padding: 12px 24px; border-radius: 14px; color: var(--text-dim);
+            cursor: pointer; display: flex; align-items: center; gap: 15px; transition: 0.3s;
+        }
+        .search-trigger:hover { border-color: var(--accent); background: rgba(255,255,255,0.05); }
+
+        /* GRID & CARDS ANIMATION */
+        .services-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 25px; 
+            margin-bottom: 60px; 
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 4rem;
-            animation: fadeInUp 1s ease;
-            position: relative; /* Для правильного позиционирования кнопки */
-        }
-
-        /* --- Стили для кнопки доната --- */
-        .donate-button {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: var(--primary);
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: background 0.3s ease, transform 0.2s ease;
-            z-index: 10;
-        }
-
-        .donate-button:hover {
-            background: var(--primary-dark);
-            transform: scale(1.05);
-        }
-        /* ------------------------------- */
-
-        .logo {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-            flex: 1;
-        }
-
-        .service-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255,255,255,0.1);
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            text-decoration: none;
+        .node-card {
+            background: var(--glass); 
+            backdrop-filter: blur(25px); 
+            border: 1px solid var(--glass-border);
+            border-radius: 28px; 
+            padding: 30px; 
+            text-decoration: none; 
             color: inherit;
-            display: block;
-        }
-
-        .service-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
+            display: flex; 
+            flex-direction: column; 
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .service-card:hover::before {
-            left: 100%;
-        }
-
-        .service-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
-            border-color: var(--primary);
-        }
-
-        .service-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .service-title {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-
-        .service-desc {
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        /* Стили для блока соцсетей */
-        .social-section {
-            margin-top: auto;
-            padding-top: 3rem;
-            text-align: center;
-        }
-
-        .social-title {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            margin-bottom: 1.5rem;
-            font-weight: 500;
-        }
-
-        .social-grid {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .social-button {
-            width: 60px;
-            height: 60px;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            text-decoration: none;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: fadeInUp 0.6s ease backwards;
             position: relative;
             overflow: hidden;
-            border: 2px solid transparent;
         }
 
-        .social-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s ease;
+        /* Блик при наведении */
+        .node-card::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transition: 0.5s;
         }
 
-        .social-button:hover::before {
-            left: 100%;
+        .node-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(255, 140, 0, 0.1);
+            background: rgba(255, 255, 255, 0.05);
         }
+        .node-card:hover::before { left: 100%; }
 
-        .social-button:hover {
-            transform: translateY(-5px) scale(1.1);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        .node-icon { 
+            font-size: 2.2rem; color: var(--accent); margin-bottom: 20px; 
+            transition: transform 0.4s ease;
         }
+        .node-card:hover .node-icon { transform: scale(1.2) rotate(5deg); }
 
-        .social-icon {
-            font-size: 1.5rem;
-            z-index: 2;
-        }
+        .node-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 12px; }
+        .node-desc { font-size: 0.95rem; color: var(--text-dim); line-height: 1.6; }
 
-        /* Цвета для разных соцсетей */
-        .telegram {
-            background: linear-gradient(135deg, #0088cc, #00aced);
-            color: white;
+        /* FOOTER */
+        .footer { 
+            text-align: center; padding: 50px 20px; border-top: 1px solid var(--glass-border);
+            backdrop-filter: blur(15px); background: var(--glass); border-radius: 40px 40px 0 0;
         }
-
-        .vk {
-            background: linear-gradient(135deg, #4a76a8, #5b88bd);
-            color: white;
-        }
-
-        .web {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-        }
-
-        .email {
-            background: linear-gradient(135deg, #ea4335, #d14836);
-            color: white;
-        }
-
-        .tiktok {
-            background: linear-gradient(135deg, #000000, #69c9d0);
-            color: white;
-        }
-
-        /* Уведомление о копировании */
-        .copy-notification {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            padding: 12px 24px;
-            border-radius: 10px;
-            font-weight: 600;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 1000;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-            pointer-events: none;
-        }
-
-        .copy-notification.show {
-            opacity: 1;
-        }
-
-        /* --- Стили для модального окна (Донат) --- */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: none; /* Скрыто по умолчанию */
-            justify-content: center;
-            align-items: center;
-            z-index: 20;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal.show {
-            display: flex;
-            opacity: 1;
-        }
-
-        .modal-content {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            transform: translateY(-50px);
-            transition: transform 0.3s ease;
-        }
-        
-        .modal.show .modal-content {
-            transform: translateY(0);
-        }
-
-        .modal-text {
-            font-size: 1.3rem;
-            margin-bottom: 25px;
-            font-weight: 500;
-            color: var(--text);
-        }
-
-        .modal-button {
-            background: var(--success); /* Зеленый цвет для кнопки */
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: 700;
-            transition: background 0.3s ease, transform 0.2s ease;
-            text-decoration: none;
+        .social-link { 
+            font-size: 2rem; margin: 0 15px; color: var(--text); transition: 0.4s; 
             display: inline-block;
         }
+        .social-link:hover { color: var(--accent); transform: translateY(-5px) scale(1.2); }
 
-        .modal-button:hover {
-            background: #0d9471;
-            transform: scale(1.05);
-        }
-        /* ------------------------------------------- */
-
+        /* КРАСИВЫЕ АНИМАЦИИ */
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
+        /* Задержки для появления карточек (шахматный порядок) */
+        .node-card:nth-child(n) { animation-delay: calc(var(--i) * 0.05s); }
 
-        .card-animation {
-            animation: fadeInUp 0.6s ease backwards;
-        }
-
-        .card-animation:nth-child(1) { animation-delay: 0.1s; }
-        .card-animation:nth-child(2) { animation-delay: 0.2s; }
-        .card-animation:nth-child(3) { animation-delay: 0.3s; }
-        .card-animation:nth-child(4) { animation-delay: 0.4s; }
-        .card-animation:nth-child(5) { animation-delay: 0.5s; }
-        .card-animation:nth-child(6) { animation-delay: 0.6s; }
-        .card-animation:nth-child(7) { animation-delay: 0.7s; }
-        .card-animation:nth-child(8) { animation-delay: 0.8s; }
-        .card-animation:nth-child(9) { animation-delay: 0.9s; }
-        .card-animation:nth-child(10) { animation-delay: 1.0s; }
-        .card-animation:nth-child(11) { animation-delay: 1.1s; }
-        .card-animation:nth-child(12) { animation-delay: 1.2s; }
-        .card-animation:nth-child(13) { animation-delay: 1.3s; }
-        .card-animation:nth-child(14) { animation-delay: 1.4s; }
-
-        /* Мобильная адаптация */
+        /* Мобильные правки: отключаем тяжелые эффекты для скорости */
         @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
-            .header {
-                /* Сдвигаем все содержимое, чтобы кнопка в правом верхнем углу не перекрывала */
-                padding-top: 50px; 
-            }
-
-            .donate-button {
-                top: 10px; /* Сдвигаем кнопку чуть ниже на мобильных */
-                right: 10px;
-                padding: 8px 12px;
-                font-size: 0.9rem;
-            }
-            
-            .services-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .logo {
-                font-size: 3rem;
-            }
-            
-            .social-button {
-                width: 55px;
-                height: 55px;
-            }
-            
-            .social-icon {
-                font-size: 1.3rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .social-grid {
-                gap: 0.8rem;
-            }
-            
-            .social-button {
-                width: 50px;
-                height: 50px;
-            }
-            
-            .social-title {
-                font-size: 1rem;
-            }
+            .node-card:hover { transform: translateY(-5px); }
+            .header-ui { padding: 15px; flex-direction: column; }
+            .nav-actions { width: 100%; justify-content: center; }
         }
     </style>
 </head>
 <body>
-    <div class="particles" id="particles"></div>
-    
-    <div class="container">
-        <div class="header">
-            <button class="donate-button" onclick="showDonateModal()">
-                <i class="fas fa-heart" style="margin-right: 5px;"></i> Поддержать проект
-            </button>
-            
-            <div class="logo">
-                <i class="fas fa-brain"></i>
+
+<canvas id="canvas"></canvas>
+
+<div class="container">
+    <header class="header-ui">
+        <div class="logo-box">
+            <i class="fas fa-brain"></i>
+            <span class="logo-text">Neuron</span>
+        </div>
+        <div class="nav-actions">
+            <div class="search-trigger" onclick="toggleSearch()">
+                <i class="fas fa-search"></i> <span>Поиск по узлам</span>
             </div>
-            <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Neuron Ecosystem</h1>
-            <p style="color: var(--text-secondary); font-size: 1.2rem;">
-                Простые и эффективные инструменты
-            </p>
+            <button class="btn-donate" onclick="toggleDonate()">Поддержать</button>
         </div>
+    </header>
 
-<div class="services-grid">
-            <a href="https://status.neuron-p2p.ru" class="service-card card-animation" target="_blank">
-                <div class="service-icon">
-                    <i class="fas fa-signal"></i>
-                </div>
-                <h3 class="service-title">Neuron Status</h3>
-                <p class="service-desc">Мониторинг доступности всех узлов экосистемы в реальном времени</p>
-            </a>
+    <div class="services-grid" id="main-grid"></div>
 
-            <a href="notes.html" class="service-card card-animation">
-                <div class="service-icon">
-                    <i class="fas fa-sticky-note"></i>
-                </div>
-                <h3 class="service-title">Neuron Notes</h3>
-                <p class="service-desc">Умные заметки для ваших идей</p>
-            </a>
-
-            <a href="https://converter.neuron-p2p.ru" class="service-card card-animation" target="_blank">
-                <div class="service-icon">
-                    <i class="fas fa-exchange-alt"></i>
-                </div>
-                <h3 class="service-title">Neuron Converter</h3>
-                <p class="service-desc">Конвертер валют, единиц измерения и температур</p>
-            </a>
-
-            <a href="https://neuron-ai-eta.vercel.app/" class="service-card card-animation" target="_blank">
-                <div class="service-icon">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <h3 class="service-title">Neuron AI</h3>
-                <p class="service-desc">Искусственный интеллект для решения повседневных задач</p>
-            </a>
-
-            <a href="studio.html" class="service-card card-animation">
-                <div class="service-icon">
-                    <i class="fas fa-palette"></i>
-                </div>
-                <h3 class="service-title">Neuron Digital Studio</h3>
-                <p class="service-desc">Узнайте о нашей студии дизайна и разработки</p>
-            </a>
-
-            <a href="https://tools.neuron-p2p.ru" class="service-card card-animation" target="_blank">
-                <div class="service-icon">
-                    <i class="fas fa-tools"></i>
-                </div>
-                <h3 class="service-title">Neuron Tools</h3>
-                <p class="service-desc">Коллекция полезных инструментов для повседневных задач</p>
-            </a>
-
-            <a href="https://calendar.neuron-p2p.ru" class="service-card card-animation" target="_blank">
-                <div class="service-icon">
-                    <i class="fas fa-calendar-alt"></i>
-                </div>
-                <h3 class="service-title">Neuron Calendar</h3>
-                <p class="service-desc">Умный планировщик с событиями и напоминаниями</p>
-            </a>
-
-            <a href="https://study.neuron-p2p.ru" class="service-card card-animation" target="_blank">
-                <div class="service-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                </div>
-                <h3 class="service-title">Neuron Study</h3>
-                <p class="service-desc">Умное приложение для студентов с расписанием и переводчиком</p>
-            </a>
-
-            <a href="https://budget.neuron-p2p.ru" class="service-card card-animation" target="_blank">
-                <div class="service-icon">
-                    <i class="fas fa-wallet"></i>
-                </div>
-                <h3 class="service-title">Neuron Budget</h3>
-                <p class="service-desc">Умный трекер финансов с аналитикой и целями накопления</p>
-            </a>
-
-            <a href="https://game-hub.neuron-p2p.ru" class="service-card card-animation" target="_blank">
-                <div class="service-icon">
-                    <i class="fas fa-gamepad"></i>
-                </div>
-                <h3 class="service-title">Neuron Game Hub</h3>
-                <p class="service-desc">Коллекция увлекательных игр для развития и развлечения</p>
-            </a>
-
-            <a href="https://password-generator.neuron-p2p.ru" class="service-card card-animation" target="_blank">
-                <div class="service-icon">
-                    <i class="fas fa-key"></i>
-                </div>
-                <h3 class="service-title">Neuron Password Generator</h3>
-                <p class="service-desc">Генератор надежных паролей с настройкой сложности</p>
-            </a>
-            
-            <a href="https://synapse.neuron-p2p.ru" class="service-card card-animation" target="_blank">
-                <div class="service-icon">
-                    <i class="fas fa-lock"></i> 
-                </div>
-                <h3 class="service-title">Neuron Synapse</h3>
-                <p class="service-desc">P2P чат с шифрованием и повышенной анонимностью</p>
-            </a>
-
-            <a href="https://link.neuron-p2p.ru" class="service-card card-animation" target="_blank">
-                <div class="service-icon">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-                <h3 class="service-title">Neuron Link</h3>
-                <p class="service-desc">Безопасный анонимайзер ссылок с очисткой метаданных</p>
-            </a>
-
-            <a href="https://ifwhat.ru" class="service-card card-animation" target="_blank">
-                <div class="service-icon">
-                    <i class="fas fa-question-circle"></i>
-                </div>
-                <h3 class="service-title">What if</h3>
-                <p class="service-desc">Альтернативные версии реальности</p>
-            </a>
+    <footer class="footer">
+        <div class="social-icons">
+            <a href="https://t.me/neuron_ecosystem" target="_blank" class="social-link"><i class="fab fa-telegram"></i></a>
+            <a href="https://vk.com/club233118101" target="_blank" class="social-link"><i class="fab fa-vk"></i></a>
+            <a href="https://www.tiktok.com/@neuron_eco" target="_blank" class="social-link"><i class="fab fa-tiktok"></i></a>
+            <div class="social-link" onclick="copyEmail()" style="cursor:pointer"><i class="fas fa-envelope"></i></div>
         </div>
+        <p style="margin-top:20px; opacity:0.3; letter-spacing:3px">BUILDING FUTURE ECOSYSTEM</p>
+    </footer>
+</div>
 
-        <div class="social-section">
-            <h3 class="social-title">Мы в социальных сетях</h3>
-            <div class="social-grid">
-                <a href="https://t.me/neuron_ecosystem" class="social-button telegram" target="_blank" onclick="event.stopPropagation()">
-                    <i class="fab fa-telegram social-icon"></i>
-                </a>
-                
-                <a href="https://vk.com/club233118101?from=groups" class="social-button vk" target="_blank" onclick="event.stopPropagation()">
-                    <i class="fab fa-vk social-icon"></i>
-                </a>
-                
-                <a href="https://neuron-p2p.ru" class="social-button web" target="_blank" onclick="event.stopPropagation()">
-                    <i class="fas fa-globe social-icon"></i>
-                </a>
-                
-                <a href="#" class="social-button email" id="email-button" onclick="copyEmail(event)">
-                    <i class="fas fa-envelope social-icon"></i>
-                </a>
-                
-                <a href="https://tiktok.com/@neuron_eco" class="social-button tiktok" target="_blank" onclick="event.stopPropagation()">
-                    <i class="fab fa-tiktok social-icon"></i>
-                </a>
-            </div>
-        </div>
+<div class="modal-overlay" id="donate-modal" onclick="toggleDonate()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; justify-content:center; align-items:center; backdrop-filter:blur(10px);">
+    <div class="modal-content" onclick="event.stopPropagation()" style="background:#0a0b14; border:1px solid var(--accent); padding:40px; border-radius:30px; text-align:center; box-shadow:0 0 50px rgba(255,140,0,0.2)">
+        <h2 style="color:var(--accent)">Поддержка проекта</h2>
+        <p style="margin:15px 0; color:var(--text-dim)">Все средства пойдут на развитие серверов и новые ИИ-модели ❤️</p>
+        <button class="btn-donate" style="width:100%; padding:15px" onclick="window.open('https://yoomoney.ru/to/4100119394883694', '_blank')">Перейти к оплате</button>
     </div>
+</div>
 
-    <div id="donate-modal" class="modal" onclick="closeDonateModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <p class="modal-text">Эти средства пойдут на развитие проекта❤️</p>
-            <a id="support-link" href="https://yoomoney.ru/to/4100119394883694" target="_blank" class="modal-button" onclick="closeDonateModal(event)">
-                Поддержать
-            </a>
-        </div>
+<div id="search-modal" onclick="toggleSearch()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(5,5,10,0.98); z-index:3000; justify-content:center; padding-top:10vh;">
+    <div class="search-container" onclick="event.stopPropagation()" style="width:90%; max-width:700px">
+        <input type="text" class="search-input" id="search-input" placeholder="Введите команду (например: 'ии' или 'донат')..." style="width:100%; background:rgba(255,255,255,0.05); border:2px solid var(--accent); color:#fff; padding:20px; border-radius:20px; font-size:1.4rem; outline:none; box-shadow:0 0 30px var(--accent-glow)">
+        <div id="suggestions" style="margin-top:20px; border-radius:20px; overflow:hidden"></div>
     </div>
+</div>
 
-    <div class="copy-notification" id="copy-notification">Email скопирован!</div>
+<div class="mic-btn" id="mic-btn" onclick="toggleVoice()" style="position:fixed; bottom:30px; right:30px; width:70px; height:70px; background:var(--accent); border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; z-index:1000; transition:0.3s; box-shadow:0 10px 30px var(--accent-glow)">
+    <i class="fas fa-microphone" style="color:#000; font-size:1.5rem"></i>
+</div>
 
-    <script>
-        function createParticles() {
-            const particles = document.getElementById('particles');
-            for (let i = 0; i < 50; i++) {
-                const particle = document.createElement('div');
-                particle.style.cssText = `
-                    position: absolute;
-                    width: 2px;
-                    height: 2px;
-                    background: var(--primary);
-                    border-radius: 50%;
-                    left: ${Math.random() * 100}%;
-                    top: ${Math.random() * 100}%;
-                    animation: floatParticle ${10 + Math.random() * 20}s linear infinite;
-                `;
-                particles.appendChild(particle);
-            }
-        }
+<script>
+    const services = [
+        { name: "Neuron Status", url: "https://status.neuron-p2p.ru", icon: "fa-signal", desc: "Живой мониторинг аптайма всех систем экосистемы.", tags: ["статус", "онлайн", "status", "работа", "мониторинг", "раб"] },
+        { name: "Neuron AI", url: "https://neuron-ai-eta.vercel.app/", icon: "fa-robot", desc: "Нейросетевой хаб для генерации и анализа данных.", tags: ["ии", "ai", "нейросеть", "нейронка", "гпт", "нейро", "иишка", "генерация"] },
+        { name: "Neuron Notes", url: "notes.html", icon: "fa-sticky-note", desc: "Безопасное хранилище ваших идей и черновиков.", tags: ["заметки", "блокнот", "текст", "запиши", "напиши", "заметочка", "заметка", "метка", "меточка"] },
+        { name: "Neuron Converter", url: "https://converter.neuron-p2p.ru", icon: "fa-exchange-alt", desc: "Быстрая конвертация любых величин и валют.", tags: ["конвертер", "валюта", "деньги", "перевод"] },
+        { name: "Digital Studio", url: "studio.html", icon: "fa-palette", desc: "Создание интерфейсов и цифрового искусства.", tags: ["студия", "дизайн", "studio", "сайт", "домен"] },
+        { name: "Neuron Tools", url: "https://tools.neuron-p2p.ru", icon: "fa-tools", desc: "Инструментарий для разработчиков и инженеров.", tags: ["тулс", "инструменты", "tools", "инструмент"] },
+        { name: "Neuron Budget", url: "https://budget.neuron-p2p.ru", icon: "fa-wallet", desc: "Учет личных финансов в защищенном контуре.", tags: ["бюджет", "деньги", "кошелек", "траты", "операции", "операция", "аналитика"] },
+        { name: "Neuron Study", url: "https://study.neuron-p2p.ru", icon: "fa-graduation-cap", desc: "Платформа для обучения и хранения знаний.", tags: ["учеба", "школа", "лекции", "учится", "дз", "домашнее задание", "school"] },
+        { name: "Neuron Link", url: "https://link.neuron-p2p.ru", icon: "fa-shield-alt", desc: "Сервис для анонимизации и защиты внешних ссылок.", tags: ["линк", "ссылка", "безопасность", "тег"] },
+        { name: "Neuron Calendar", url: "https://calendar.neuron-p2p.ru", icon: "fa-calendar-alt", desc: "Планировщик задач с синхронизацией узлов.", tags: ["календарь", "время", "планы", "план", "планировщик", "событие"] },
+        { name: "Game Hub", url: "https://game-hub.neuron-p2p.ru", icon: "fa-gamepad", desc: "Игровой сегмент для отдыха внутри системы.", tags: ["игры", "гейм", "отдых", "игра", "пазл", "пазлы", "печать", "2048"] },
+        { name: "Pass Generator", url: "https://password-generator.neuron-p2p.ru", icon: "fa-key", desc: "Создание паролей с максимальной энтропией.", tags: ["пароль", "безопасность", "ключ", "пароли", "пас", "пасс", "pass", "password"] },
+        { name: "Neuron Synapse", url: "https://synapse.neuron-p2p.ru", icon: "fa-network-wired", desc: "Шифрованный протокол связи между пользователями.", tags: ["чат", "связь", "синапс", "аноним", "разговор", "писать"] },
+        { name: "What If", url: "https://ifwhat.ru", icon: "fa-infinity", desc: "Анализ альтернативных сценариев и гипотез.", tags: ["что если", "история", "сценарии", "вдруг", "гипотеза", "сценарий", "альтернатива"] },
+        { name: "Донат", url: "https://yoomoney.ru/to/4100119394883694", icon: "fa-heart", desc: "Поддержать проект.", tags: ["донат", "деньги", "donate", "пожертвование", "помощь", "помочь", "help"] }
+    ];
 
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes floatParticle {
-                0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
-                10% { opacity: 1; }
-                90% { opacity: 1; }
-                100% { transform: translate(${Math.random() * 200 - 100}px, ${Math.random() * 200 - 100}px) rotate(360deg); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
+    const grid = document.getElementById('main-grid');
+    services.forEach((s, index) => {
+        grid.innerHTML += `
+            <a href="${s.url}" class="node-card" target="_blank" style="--i: ${index}">
+                <div class="node-icon"><i class="fas ${s.icon}"></i></div>
+                <h3 class="node-title">${s.name}</h3>
+                <p class="node-desc">${s.desc}</p>
+                ${s.name === 'Neuron Status' ? '<div style="color:#00ff88; font-size:0.75rem; margin-top:15px; font-weight:bold; display:flex; align-items:center; gap:8px"><span style="width:8px; height:8px; background:#00ff88; border-radius:50%; box-shadow:0 0 10px #00ff88"></span> СИСТЕМЫ АКТИВНЫ</div>' : ''}
+            </a>`;
+    });
 
-        // Функция копирования email
-        function copyEmail(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            
-            const email = 'wertq6306@gmail.com';
-            const copyNotification = document.getElementById('copy-notification');
-            
-            // Современный способ копирования
-            navigator.clipboard.writeText(email).then(() => {
-                copyNotification.classList.add('show');
-                setTimeout(() => {
-                    copyNotification.classList.remove('show');
-                }, 2000);
-            }).catch(() => {
-                // Fallback для старых браузеров
-                const tempInput = document.createElement('input');
-                tempInput.value = email;
-                document.body.appendChild(tempInput);
-                tempInput.select();
-                document.execCommand('copy');
-                document.body.removeChild(tempInput);
-                
-                copyNotification.classList.add('show');
-                setTimeout(() => {
-                    copyNotification.classList.remove('show');
-                } , 2000);
-            });
-        }
+    // --- LOGIC ---
+    function toggleDonate() {
+        const m = document.getElementById('donate-modal');
+        m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+    }
 
-        // --- ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА (ДОНАТ) ---
-        const donateModal = document.getElementById('donate-modal');
+    function toggleSearch() {
+        const modal = document.getElementById('search-modal');
+        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        if (modal.style.display === 'flex') document.getElementById('search-input').focus();
+    }
 
-        function showDonateModal() {
-            donateModal.classList.add('show');
-            document.body.style.overflow = 'hidden'; // Запретить скролл фона
-        }
-
-        function closeDonateModal(event) {
-            // Закрываем только если клик был вне содержимого модала (на фоне)
-            if (event.target === donateModal || event.currentTarget.id === 'support-link') {
-                donateModal.classList.remove('show');
-                document.body.style.overflow = ''; // Восстановить скролл
-            }
-        }
-
-        // Запуск анимаций
-        createParticles();
+    // Поиск
+    document.getElementById('search-input').addEventListener('input', (e) => {
+        const val = e.target.value.toLowerCase();
+        const res = document.getElementById('suggestions');
+        res.innerHTML = '';
+        if(!val) return;
         
-        // Добавляем интерактивность для карточек
-        document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.service-card');
-            cards.forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-10px) scale(1.02)';
-                });
-                
-                card.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0) scale(1)';
-                });
+        services.filter(s => s.name.toLowerCase().includes(val) || s.tags.some(t => t.includes(val)) || (val === 'донат'))
+            .forEach(s => {
+                const item = document.createElement('div');
+                item.style.padding = '20px';
+                item.style.background = 'rgba(255,255,255,0.05)';
+                item.style.cursor = 'pointer';
+                item.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+                item.innerHTML = `<i class="fas ${s.icon}" style="color:var(--accent); margin-right:15px"></i> ${s.name}`;
+                item.onclick = () => window.open(val === 'донат' ? 'https://yoomoney.ru/to/4100119394883694' : s.url, '_blank');
+                res.appendChild(item);
             });
+    });
+
+    // Голос
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'ru-RU';
+    function toggleVoice() { try { recognition.start(); } catch(e) {} }
+    recognition.onstart = () => document.getElementById('mic-btn').style.transform = 'scale(1.2) rotate(15deg)';
+    recognition.onend = () => document.getElementById('mic-btn').style.transform = 'scale(1)';
+    recognition.onresult = (e) => {
+        const speech = e.results[0][0].transcript.toLowerCase();
+        if(speech.includes('донат') || speech.includes('поддержать')) window.open('https://yoomoney.ru/to/4100119394883694', '_blank');
+        const found = services.find(s => speech.includes(s.name.toLowerCase()) || s.tags.some(t => speech.includes(t)));
+        if(found) window.open(found.url, '_blank');
+    };
+
+    function copyEmail() {
+        navigator.clipboard.writeText('wertq6306@gmail.com');
+        alert('Email скопирован!');
+    }
+
+    // CANVAS (Neural Mesh)
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let points = [];
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize);
+    resize();
+
+    for(let i=0; i<80; i++) points.push({
+        x: Math.random()*canvas.width, 
+        y: Math.random()*canvas.height, 
+        vx: (Math.random()-0.5)*0.5, 
+        vy: (Math.random()-0.5)*0.5
+    });
+
+    function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        points.forEach((p, i) => {
+            p.x += p.vx; p.y += p.vy;
+            if(p.x<0 || p.x>canvas.width) p.vx *= -1;
+            if(p.y<0 || p.y>canvas.height) p.vy *= -1;
+            
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2);
+            ctx.fillStyle = 'rgba(255, 140, 0, 0.4)';
+            ctx.fill();
+
+            for(let j=i+1; j<points.length; j++) {
+                const dist = Math.hypot(p.x-points[j].x, p.y-points[j].y);
+                if(dist < 180) {
+                    ctx.strokeStyle = `rgba(255, 140, 0, ${0.15 * (1 - dist/180)})`;
+                    ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(points[j].x, points[j].y);
+                    ctx.stroke();
+                }
+            }
         });
-    </script>
+        requestAnimationFrame(draw);
+    }
+    draw();
+</script>
+
 </body>
 </html>
