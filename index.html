@@ -25,6 +25,12 @@
             min-height: 100vh;
         }
 
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0b14; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
         #canvas { position: fixed; top: 0; left: 0; z-index: -1; filter: blur(0.4px); }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
@@ -54,17 +60,53 @@
             box-shadow: 0 0 10px #ff4444;
         }
 
-        .news-dropdown {
-            position: absolute; top: 55px; right: 0; width: 320px;
-            background: #0a0b14; border: 1px solid var(--accent);
-            border-radius: 20px; backdrop-filter: blur(30px); display: none;
-            flex-direction: column; z-index: 9999;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        /* ЦЕНТРАЛЬНОЕ ОКНО УВЕДОМЛЕНИЙ (НОВОЕ) */
+        .news-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 5, 10, 0.85); /* Затемнение фона */
+            z-index: 9999;
+            display: none; justify-content: center; align-items: center;
+            backdrop-filter: blur(8px);
         }
-        .news-dropdown.show { display: flex; animation: slideDown 0.3s ease; }
-        .news-item { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .news-date { font-size: 0.7rem; color: var(--accent); font-weight: bold; display: block; margin-bottom: 5px; }
-        .news-text { font-size: 0.85rem; line-height: 1.4; color: var(--text-dim); }
+        .news-overlay.show { display: flex; animation: fadeIn 0.3s ease; }
+
+        .news-central-card {
+            background: #0a0b14; 
+            width: 90%; max-width: 500px;
+            border: 1px solid var(--accent);
+            border-radius: 24px;
+            box-shadow: 0 0 50px rgba(255, 140, 0, 0.15);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .news-card-header {
+            padding: 20px 25px;
+            background: rgba(255, 140, 0, 0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .news-card-header h3 { color: var(--text); font-weight: 700; letter-spacing: 1px; font-size: 1.2rem; }
+        .news-close-btn { color: var(--text-dim); cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
+        .news-close-btn:hover { color: var(--accent); transform: rotate(90deg); }
+
+        .news-card-content {
+            padding: 10px 0;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .news-item { 
+            padding: 20px 25px; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+            transition: 0.2s;
+        }
+        .news-item:last-child { border-bottom: none; }
+        .news-item:hover { background: rgba(255,255,255,0.02); }
+
+        .news-date { font-size: 0.75rem; color: var(--accent); font-weight: bold; display: block; margin-bottom: 8px; letter-spacing: 1px; }
+        .news-text { font-size: 0.95rem; line-height: 1.5; color: var(--text-dim); }
 
         /* КНОПКИ */
         .btn-donate {
@@ -133,11 +175,12 @@
         /* АНИМАЦИИ */
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 
         /* МОБИЛКА */
         @media (max-width: 768px) {
             .header-ui { flex-direction: column; gap: 20px; }
-            .news-dropdown { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) !important; width: 90%; }
             .news-widget-item { flex-direction: column; gap: 5px; }
         }
     </style>
@@ -159,9 +202,6 @@
                     <i class="fas fa-bell"></i>
                     <span class="bell-dot" id="bell-dot"></span>
                 </button>
-                <div class="news-dropdown" id="news-dropdown">
-                    <div id="news-list"></div>
-                </div>
             </div>
             <button class="btn-donate" onclick="toggleDonate()">Поддержать</button>
         </div>
@@ -185,6 +225,17 @@
         </div>
         <p style="margin-top:20px; opacity:0.3; letter-spacing:3px">NEURON ECOSYSTEM 2026</p>
     </footer>
+</div>
+
+<div id="news-overlay" class="news-overlay" onclick="toggleNewsDropdown()">
+    <div class="news-central-card" onclick="event.stopPropagation()">
+        <div class="news-card-header">
+            <h3><i class="fas fa-bell" style="color:var(--accent); margin-right:10px;"></i>Уведомления</h3>
+            <i class="fas fa-times news-close-btn" onclick="toggleNewsDropdown()"></i>
+        </div>
+        <div class="news-card-content" id="news-list">
+            </div>
+    </div>
 </div>
 
 <div id="search-modal" onclick="toggleSearch()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(5,5,10,0.98); z-index:10000; justify-content:center; padding-top:10vh;">
@@ -237,7 +288,7 @@
         // Новости
         const list = document.getElementById('news-list');
         const widget = document.getElementById('news-widget-list');
-        list.innerHTML = ALL_NEWS.slice(0, 3).map(n => `<div class="news-item"><span class="news-date">${n.date}</span><div class="news-text">${n.text}</div></div>`).join('');
+        list.innerHTML = ALL_NEWS.map(n => `<div class="news-item"><span class="news-date">${n.date}</span><div class="news-text">${n.text}</div></div>`).join('');
         widget.innerHTML = ALL_NEWS.slice(0, 3).map(n => `<div class="news-widget-item"><div class="news-widget-date">${n.date}</div><div class="news-widget-text">${n.text}</div></div>`).join('');
 
         const lastRead = localStorage.getItem('last_news_id') || 0;
@@ -265,7 +316,7 @@
     });
 
     function toggleNewsDropdown() {
-        const d = document.getElementById('news-dropdown');
+        const d = document.getElementById('news-overlay');
         d.classList.toggle('show');
         if(d.classList.contains('show')) {
             document.getElementById('bell-dot').style.display = 'none';
@@ -321,10 +372,6 @@
     draw();
     init();
 
-    // Закрытие при клике мимо
-    window.onclick = (e) => {
-        if (!e.target.closest('.notification-container')) document.getElementById('news-dropdown').classList.remove('show');
-    };
 </script>
 
 </body>
