@@ -1,378 +1,221 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Neuron Ecosystem | Main Node</title>
+    <meta name="description" content="Главная точка входа в Neuron Ecosystem: AI, инструменты, проекты и статус экосистемы.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --bg: #05050a;
-            --accent: #ff8c00;
-            --accent-glow: rgba(255, 140, 0, 0.4);
-            --glass: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text: #e6edf3;
-            --text-dim: #a0a0c0;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background: var(--bg); 
-            color: var(--text); 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            overflow-x: hidden; 
-            min-height: 100vh;
-        }
-
-        /* SCROLLBAR */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0a0b14; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
-        #canvas { position: fixed; top: 0; left: 0; z-index: -1; filter: blur(0.4px); }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-
-        /* HEADER */
-        .header-ui {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;
-            backdrop-filter: blur(20px); padding: 20px 30px; border-radius: 24px;
-            border: 1px solid var(--glass-border); background: var(--glass);
-            animation: slideDown 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-            position: relative; z-index: 1000;
-        }
-
-        .logo-box { display: flex; align-items: center; gap: 15px; }
-        .logo-text { font-size: 1.5rem; font-weight: 800; letter-spacing: 5px; color: var(--accent); text-transform: uppercase; text-shadow: 0 0 15px var(--accent-glow); }
-
-        .nav-actions { display: flex; gap: 15px; align-items: center; }
-
-        /* КОЛОКОЛЬЧИК */
-        .notification-container { position: relative; }
-        .notification-bell {
-            background: none; border: none; color: var(--text-dim);
-            font-size: 1.4rem; cursor: pointer; transition: 0.3s; padding: 5px;
-        }
-        .bell-dot {
-            position: absolute; top: 5px; right: 5px; width: 10px; height: 10px;
-            background: #ff4444; border-radius: 50%; border: 2px solid var(--bg); display: none;
-            box-shadow: 0 0 10px #ff4444;
-        }
-
-        /* ЦЕНТРАЛЬНОЕ ОКНО УВЕДОМЛЕНИЙ (НОВОЕ) */
-        .news-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(5, 5, 10, 0.85); /* Затемнение фона */
-            z-index: 9999;
-            display: none; justify-content: center; align-items: center;
-            backdrop-filter: blur(8px);
-        }
-        .news-overlay.show { display: flex; animation: fadeIn 0.3s ease; }
-
-        .news-central-card {
-            background: #0a0b14; 
-            width: 90%; max-width: 500px;
-            border: 1px solid var(--accent);
-            border-radius: 24px;
-            box-shadow: 0 0 50px rgba(255, 140, 0, 0.15);
-            display: flex; flex-direction: column;
-            overflow: hidden;
-            animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .news-card-header {
-            padding: 20px 25px;
-            background: rgba(255, 140, 0, 0.05);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .news-card-header h3 { color: var(--text); font-weight: 700; letter-spacing: 1px; font-size: 1.2rem; }
-        .news-close-btn { color: var(--text-dim); cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
-        .news-close-btn:hover { color: var(--accent); transform: rotate(90deg); }
-
-        .news-card-content {
-            padding: 10px 0;
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-
-        .news-item { 
-            padding: 20px 25px; 
-            border-bottom: 1px solid rgba(255,255,255,0.05); 
-            transition: 0.2s;
-        }
-        .news-item:last-child { border-bottom: none; }
-        .news-item:hover { background: rgba(255,255,255,0.02); }
-
-        .news-date { font-size: 0.75rem; color: var(--accent); font-weight: bold; display: block; margin-bottom: 8px; letter-spacing: 1px; }
-        .news-text { font-size: 0.95rem; line-height: 1.5; color: var(--text-dim); }
-
-        /* КНОПКИ */
-        .btn-donate {
-            background: var(--accent); color: #000; border: none; padding: 12px 24px; 
-            border-radius: 14px; font-weight: 800; cursor: pointer; transition: all 0.4s;
-            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
-        }
-        .btn-donate:hover { transform: translateY(-2px); box-shadow: 0 8px 25px var(--accent-glow); }
-
-        .search-trigger {
-            background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border);
-            padding: 12px 24px; border-radius: 14px; color: var(--text-dim);
-            cursor: pointer; display: flex; align-items: center; gap: 15px; transition: 0.3s;
-        }
-        .search-trigger:hover { border-color: var(--accent); background: rgba(255,255,255,0.05); }
-
-        /* СЕТКА СЕРВИСОВ */
-        .services-grid { 
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-            gap: 25px; margin-bottom: 40px; position: relative; z-index: 1;
-        }
-
-        .node-card {
-            background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--glass-border);
-            border-radius: 28px; padding: 30px; text-decoration: none; color: inherit;
-            display: flex; flex-direction: column; height: 100%;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            animation: fadeInUp 0.6s ease backwards; position: relative; overflow: hidden;
-        }
-        .node-card:hover {
-            border-color: var(--accent); transform: translateY(-12px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            background: rgba(255, 255, 255, 0.05);
-        }
-        .node-icon { font-size: 2.2rem; color: var(--accent); margin-bottom: 20px; transition: 0.4s; }
-        .node-card:hover .node-icon { transform: scale(1.2) rotate(5deg); }
-        .node-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 12px; }
-        .node-desc { font-size: 0.95rem; color: var(--text-dim); line-height: 1.6; }
-
-        /* НИЖНИЙ ЖУРНАЛ */
-        .news-widget {
-            background: var(--glass); border: 1px solid var(--glass-border);
-            border-radius: 28px; padding: 30px; margin-bottom: 60px;
-            animation: fadeInUp 0.8s ease backwards; animation-delay: 0.4s;
-        }
-        .news-widget-header { color: var(--accent); font-weight: 800; margin-bottom: 20px; letter-spacing: 2px; font-size: 0.9rem; }
-        .news-widget-item { display: flex; gap: 20px; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 18px; margin-bottom: 10px; }
-        .news-widget-date { min-width: 130px; font-size: 0.75rem; color: var(--accent); font-weight: bold; }
-
-        /* FOOTER */
-        .footer { 
-            text-align: center; padding: 50px 20px; border-top: 1px solid var(--glass-border);
-            backdrop-filter: blur(15px); background: var(--glass); border-radius: 40px 40px 0 0;
-        }
-        .social-link { font-size: 2rem; margin: 0 15px; color: var(--text); transition: 0.4s; display: inline-block; }
-        .social-link:hover { color: var(--accent); transform: translateY(-5px) scale(1.2); }
-
-        /* МИКРОФОН */
-        .mic-btn {
-            position: fixed; bottom: 30px; right: 30px; width: 70px; height: 70px;
-            background: var(--accent); border-radius: 50%; display: flex;
-            justify-content: center; align-items: center; cursor: pointer;
-            z-index: 5000; box-shadow: 0 10px 30px var(--accent-glow); transition: 0.3s;
-        }
-
-        /* АНИМАЦИИ */
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-
-        /* МОБИЛКА */
-        @media (max-width: 768px) {
-            .header-ui { flex-direction: column; gap: 20px; }
-            .news-widget-item { flex-direction: column; gap: 5px; }
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div class="page-shell">
+        <div class="orb orb-a"></div>
+        <div class="orb orb-b"></div>
+        <div class="grid-glow"></div>
 
-<canvas id="canvas"></canvas>
-
-<div class="container">
-    <header class="header-ui">
-        <div class="logo-box">
-            <i class="fas fa-brain"></i>
-            <span class="logo-text">Neuron</span>
-        </div>
-        <div class="nav-actions">
-            <div class="search-trigger" onclick="toggleSearch()"><i class="fas fa-search"></i> <span>Поиск</span></div>
-            <div class="notification-container">
-                <button class="notification-bell" onclick="toggleNewsDropdown()">
-                    <i class="fas fa-bell"></i>
-                    <span class="bell-dot" id="bell-dot"></span>
-                </button>
+        <header class="site-header">
+            <div class="brand-mark">
+                <span class="brand-icon"><i class="fas fa-brain"></i></span>
+                <div>
+                    <p class="eyebrow">Main Node</p>
+                    <a href="#hero" class="brand-name">Neuron Ecosystem</a>
+                </div>
             </div>
-            <button class="btn-donate" onclick="toggleDonate()">Поддержать</button>
-        </div>
-    </header>
 
-    <div class="services-grid" id="main-grid"></div>
+            <nav class="top-nav" aria-label="Основная навигация">
+                <a href="#core-services">Core Services</a>
+                <a href="#tools">Neuron Tools</a>
+                <a href="#projects">Projects</a>
+                <a href="#airguide">AirGuide</a>
+                <a href="#vision">Vision</a>
+                <a href="#status">Status</a>
+            </nav>
 
-    <section class="news-section">
-        <div class="news-widget">
-            <div class="news-widget-header"><i class="fas fa-bolt"></i> ПОСЛЕДНИЕ ОБНОВЛЕНИЯ</div>
-            <div id="news-widget-list"></div>
-        </div>
-    </section>
+            <a class="header-cta" href="https://t.me/neuron_ecosystem" target="_blank" rel="noreferrer">Telegram</a>
+        </header>
 
-    <footer class="footer">
-        <div class="social-icons">
-            <a href="https://t.me/neuron_ecosystem" target="_blank" class="social-link"><i class="fab fa-telegram"></i></a>
-            <a href="https://vk.com/club233118101" target="_blank" class="social-link"><i class="fab fa-vk"></i></a>
-            <a href="https://www.tiktok.com/@neuron_eco" target="_blank" class="social-link"><i class="fab fa-tiktok"></i></a>
-            <div class="social-link" onclick="copyEmail()" style="cursor:pointer"><i class="fas fa-envelope"></i></div>
-        </div>
-        <p style="margin-top:20px; opacity:0.3; letter-spacing:3px">NEURON ECOSYSTEM 2026</p>
-    </footer>
-</div>
+        <main>
+            <section class="hero-section" id="hero">
+                <div class="hero-copy">
+                    <p class="eyebrow">Ecosystem Portal</p>
+                    <h1>Одна экосистема для AI, инструментов и цифровых продуктов Neuron.</h1>
+                    <p class="hero-text">
+                        Neuron Ecosystem объединяет ключевые сервисы, внутренние инструменты и проектные направления в одну ясную точку входа.
+                        Без перегруза, без лишнего шума, с понятной картой того, что уже работает и куда экосистема растет дальше.
+                    </p>
+                    <div class="hero-actions">
+                        <a class="primary-btn" href="#core-services">Открыть ядро экосистемы</a>
+                        <a class="secondary-btn" href="#vision">Посмотреть архитектуру</a>
+                    </div>
+                    <ul class="hero-signals" id="hero-signals"></ul>
+                </div>
 
-<div id="news-overlay" class="news-overlay" onclick="toggleNewsDropdown()">
-    <div class="news-central-card" onclick="event.stopPropagation()">
-        <div class="news-card-header">
-            <h3><i class="fas fa-bell" style="color:var(--accent); margin-right:10px;"></i>Уведомления</h3>
-            <i class="fas fa-times news-close-btn" onclick="toggleNewsDropdown()"></i>
-        </div>
-        <div class="news-card-content" id="news-list">
+                <aside class="hero-panel">
+                    <div class="signal-card signal-card-main">
+                        <p class="signal-label">Main Focus</p>
+                        <h2>Neuron AI</h2>
+                        <p>AI-хаб для генерации, анализа и работы с интеллектуальными сценариями внутри экосистемы.</p>
+                        <a href="https://neuron-ai-eta.vercel.app/" target="_blank" rel="noreferrer">Открыть сервис</a>
+                    </div>
+
+                    <div class="signal-card">
+                        <p class="signal-label">Platform Layer</p>
+                        <h2>Neuron Tools</h2>
+                        <p>Набор встроенных утилит и рабочих инструментов, собранных в единый слой экосистемы.</p>
+                        <a href="https://tools.neuron-p2p.ru" target="_blank" rel="noreferrer">Открыть инструменты</a>
+                    </div>
+                </aside>
+            </section>
+
+            <section class="section-block" id="core-services">
+                <div class="section-heading">
+                    <p class="eyebrow">Core Services</p>
+                    <h2>Главные сервисы, вокруг которых строится вход в экосистему.</h2>
+                    <p>Здесь только основные продукты. Утилиты и вспомогательные функции вынесены ниже в отдельный слой `Neuron Tools`.</p>
+                </div>
+                <div class="core-grid" id="core-grid"></div>
+            </section>
+
+            <section class="section-block tools-section" id="tools">
+                <div class="section-heading">
+                    <p class="eyebrow">Inside Neuron Tools</p>
+                    <h2>Не отдельная витрина ссылок, а внутренний инструментальный контур экосистемы.</h2>
+                    <p>Конвертация, безопасность, быстрые утилиты и вспомогательные сценарии собраны в один инструментальный блок.</p>
+                </div>
+
+                <div class="tools-layout">
+                    <article class="tools-spotlight">
+                        <div class="tools-badge">Tool Layer</div>
+                        <h3>Neuron Tools — единая точка для повседневных задач.</h3>
+                        <p>
+                            Вместо разрозненных карточек главная страница теперь показывает инструменты как часть общего рабочего контура.
+                            Это делает портал чище и помогает не размывать фокус ядра экосистемы.
+                        </p>
+                        <a class="secondary-btn" href="https://tools.neuron-p2p.ru" target="_blank" rel="noreferrer">Перейти в Neuron Tools</a>
+                    </article>
+
+                    <div class="tools-list" id="tools-list"></div>
+                </div>
+            </section>
+
+            <section class="section-block" id="projects">
+                <div class="section-heading">
+                    <p class="eyebrow">Projects</p>
+                    <h2>Направления и инициативы, которые расширяют экосистему.</h2>
+                    <p>Проектный слой показывает, куда Neuron выходит за пределы базового набора сервисов.</p>
+                </div>
+                <div class="projects-grid" id="projects-grid"></div>
+            </section>
+
+            <section class="section-block airguide-section" id="airguide">
+                <div class="section-heading">
+                    <p class="eyebrow">Independent Direction</p>
+                    <h2>AirGuide как отдельное направление внутри экосистемы.</h2>
+                    <p>Отдельный домен и самостоятельная точка входа для проекта AirGuide, встроенная в общий визуальный язык Neuron Ecosystem.</p>
+                </div>
+
+                <article class="airguide-card">
+                    <div class="airguide-copy">
+                        <div class="tools-badge">AirGuide</div>
+                        <h3>airguide.su</h3>
+                        <p>
+                            Самостоятельный раздел для AirGuide, оформленный в общей стилистике экосистемы и вынесенный отдельно от базовых сервисов и проектных карточек.
+                        </p>
+                        <a class="primary-btn" href="https://airguide.su" target="_blank" rel="noreferrer">Открыть AirGuide</a>
+                    </div>
+
+                    <div class="airguide-meta">
+                        <div class="airguide-chip">
+                            <span class="eyebrow">Domain</span>
+                            <strong>airguide.su</strong>
+                        </div>
+                        <div class="airguide-chip">
+                            <span class="eyebrow">Role</span>
+                            <strong>Standalone Section</strong>
+                        </div>
+                        <div class="airguide-chip">
+                            <span class="eyebrow">Style</span>
+                            <strong>Neuron Visual System</strong>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <section class="section-block vision-section" id="vision">
+                <div class="section-heading">
+                    <p class="eyebrow">Ecosystem Vision</p>
+                    <h2>Главная страница теперь объясняет систему, а не просто перечисляет ссылки.</h2>
+                </div>
+
+                <div class="vision-grid">
+                    <article class="vision-card">
+                        <span>01</span>
+                        <h3>Единая точка входа</h3>
+                        <p>Пользователь сразу понимает, что Neuron Ecosystem — это не один сервис, а связанная среда продуктов, инструментов и проектов.</p>
+                    </article>
+                    <article class="vision-card">
+                        <span>02</span>
+                        <h3>Ясная иерархия</h3>
+                        <p>`Neuron AI` и `Neuron Tools` стали центральными акцентами, а второстепенные сущности перестали конкурировать с ядром.</p>
+                    </article>
+                    <article class="vision-card">
+                        <span>03</span>
+                        <h3>Статическая простота</h3>
+                        <p>Сайт остается статическим и быстрым: без backend, auth и базы данных, но с более зрелой структурой и подачей.</p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="section-block status-section" id="status">
+                <div class="section-heading">
+                    <p class="eyebrow">Status & Updates</p>
+                    <h2>Состояние экосистемы и последние изменения без тяжелой новостной механики.</h2>
+                </div>
+
+                <div class="status-layout">
+                    <article class="status-card">
+                        <div class="status-ping"></div>
+                        <div>
+                            <p class="status-label">System Status</p>
+                            <h3>Neuron Status</h3>
+                            <p>Проверка доступности узлов, сервисов и инфраструктурных контуров экосистемы.</p>
+                        </div>
+                        <a href="https://status.neuron-p2p.ru" target="_blank" rel="noreferrer">Открыть статус</a>
+                    </article>
+
+                    <div class="updates-card">
+                        <div class="updates-head">
+                            <h3>Latest Updates</h3>
+                            <a href="https://t.me/neuron_ecosystem" target="_blank" rel="noreferrer">Telegram</a>
+                        </div>
+                        <div class="updates-list" id="updates-list"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            <div>
+                <p class="eyebrow">Neuron Ecosystem</p>
+                <h2>Главный портал экосистемы</h2>
+                <p class="footer-copy">AI, инструменты, проекты и цифровые сервисы в одной системе координат.</p>
             </div>
+
+            <div class="footer-links">
+                <a href="https://t.me/neuron_ecosystem" target="_blank" rel="noreferrer"><i class="fab fa-telegram"></i> Telegram</a>
+                <a href="https://vk.com/club233118101" target="_blank" rel="noreferrer"><i class="fab fa-vk"></i> VK</a>
+                <a href="https://www.tiktok.com/@neuron_eco" target="_blank" rel="noreferrer"><i class="fab fa-tiktok"></i> TikTok</a>
+                <a href="mailto:wertq6306@gmail.com"><i class="fas fa-envelope"></i> Email</a>
+                <a href="https://yoomoney.ru/to/4100119394883694" target="_blank" rel="noreferrer"><i class="fas fa-heart"></i> Поддержать проект</a>
+            </div>
+        </footer>
     </div>
-</div>
 
-<div id="search-modal" onclick="toggleSearch()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(5,5,10,0.98); z-index:10000; justify-content:center; padding-top:10vh;">
-    <div class="search-container" onclick="event.stopPropagation()" style="width:90%; max-width:700px">
-        <input type="text" id="search-input" placeholder="Введите название сервиса или тег..." style="width:100%; background:rgba(255,255,255,0.05); border:2px solid var(--accent); color:#fff; padding:20px; border-radius:20px; font-size:1.4rem; outline:none; box-shadow: 0 0 30px var(--accent-glow);">
-        <div id="suggestions" style="margin-top:20px; border-radius:20px; overflow:hidden; background: rgba(255,255,255,0.02);"></div>
-    </div>
-</div>
-
-<div class="mic-btn" id="mic-btn" onclick="toggleVoice()">
-    <i class="fas fa-microphone" style="color:#000; font-size:1.5rem"></i>
-</div>
-
-<script>
-    const services = [
-        { name: "Neuron Status", url: "https://status.neuron-p2p.ru", icon: "fa-signal", desc: "Живой мониторинг аптайма всех систем экосистемы.", tags: ["статус", "онлайн", "status", "работа", "мониторинг", "раб"] }, 
-        { name: "Neuron AI", url: "https://neuron-ai-eta.vercel.app/", icon: "fa-robot", desc: "Нейросетевой хаб для генерации и анализа данных.", tags: ["ии", "ai", "нейросеть", "нейронка", "гпт", "нейро", "иишка", "генерация"] }, 
-        { name: "Neuron Notes", url: "https://notes.neuron-p2p.ru", icon: "fa-sticky-note", desc: "Безопасное хранилище ваших идей и черновиков.", tags: ["заметки", "блокнот", "текст", "запиши", "напиши", "заметочка", "заметка", "метка", "меточка"] }, 
-        { name: "Neuron Converter", url: "https://converter.neuron-p2p.ru", icon: "fa-exchange-alt", desc: "Быстрая конвертация любых величин и валют.", tags: ["конвертер", "валюта", "деньги", "перевод"] }, 
-        { name: "Digital Studio", url: "studio.html", icon: "fa-palette", desc: "Создание интерфейсов и цифрового искусства.", tags: ["студия", "дизайн", "studio", "сайт", "домен"] }, 
-        { name: "Neuron Tools", url: "https://tools.neuron-p2p.ru", icon: "fa-tools", desc: "Инструментарий для разработчиков и инженеров.", tags: ["тулс", "инструменты", "tools", "инструмент"] }, 
-        { name: "Neuron Budget", url: "https://budget.neuron-p2p.ru", icon: "fa-wallet", desc: "Учет личных финансов в защищенном контуре.", tags: ["бюджет", "деньги", "кошелек", "траты", "операции", "операция", "аналитика"] }, 
-        { name: "Neuron Study", url: "https://study.neuron-p2p.ru", icon: "fa-graduation-cap", desc: "Платформа для обучения и хранения знаний.", tags: ["учеба", "школа", "лекции", "учится", "дз", "домашнее задание", "school"] }, 
-        { name: "Neuron Link", url: "https://link.neuron-p2p.ru", icon: "fa-shield-alt", desc: "Сервис для анонимизации и защиты внешних ссылок.", tags: ["линк", "ссылка", "безопасность", "тег"] }, 
-        { name: "Neuron Calendar", url: "https://calendar.neuron-p2p.ru", icon: "fa-calendar-alt", desc: "Планировщик задач с синхронизацией узлов.", tags: ["календарь", "время", "планы", "план", "планировщик", "событие"] }, 
-        { name: "Game Hub", url: "https://game-hub.neuron-p2p.ru", icon: "fa-gamepad", desc: "Игровой сегмент для отдыха внутри системы.", tags: ["игры", "гейм", "отдых", "игра", "пазл", "пазлы", "печать", "2048"] }, 
-        { name: "Pass Generator", url: "https://password-generator.neuron-p2p.ru", icon: "fa-key", desc: "Создание паролей с максимальной энтропией.", tags: ["пароль", "безопасность", "ключ", "пароли", "пас", "пасс", "pass", "password"] }, 
-        { name: "Neuron Synapse", url: "https://synapse.neuron-p2p.ru", icon: "fa-network-wired", desc: "Шифрованный протокол связи между пользователями.", tags: ["чат", "связь", "синапс", "аноним", "разговор", "писать"] }, 
-        { name: "What If", url: "https://ifwhat.ru", icon: "fa-infinity", desc: "Анализ альтернативных сценариев и гипотез.", tags: ["что если", "история", "сценарии", "вдруг", "гипотеза", "сценарий", "альтернатива"] },
-        { name: "Донат", url: "https://yoomoney.ru/to/4100119394883694", icon: "fa-heart", desc: "Поддержать проект.", tags: ["донат", "деньги", "donate", "пожертвование", "помощь", "помочь", "help"] }
-    ];
-
-    const ALL_NEWS = [
-        { id: 3, date: "22.01.2026 | 11:15", text: "Neuron AI доступен! Сделали синхронизацию с сервисами экосистемы. Подробнее в Telegram-канале." },
-        { id: 2, date: "21.01.2026 | 12:00", text: "ВАЖНО: Neuron AI недоступен по техническим причинам!" },
-        { id: 1, date: "20.01.2026 | 21:45", text: "Полное восстановление дизайна: анимации, футер и умный поиск снова в строю!" }
-    ];
-
-    function init() {
-        // Отрисовка сетки с анимацией (задержка --i)
-        const grid = document.getElementById('main-grid');
-        grid.innerHTML = services.map((s, i) => `
-            <a href="${s.url}" class="node-card" target="_blank" style="--i: ${i}">
-                <div class="node-icon"><i class="fas ${s.icon}"></i></div>
-                <h3 class="node-title">${s.name}</h3>
-                <p class="node-desc">${s.desc}</p>
-            </a>
-        `).join('');
-
-        // Новости
-        const list = document.getElementById('news-list');
-        const widget = document.getElementById('news-widget-list');
-        list.innerHTML = ALL_NEWS.map(n => `<div class="news-item"><span class="news-date">${n.date}</span><div class="news-text">${n.text}</div></div>`).join('');
-        widget.innerHTML = ALL_NEWS.slice(0, 3).map(n => `<div class="news-widget-item"><div class="news-widget-date">${n.date}</div><div class="news-widget-text">${n.text}</div></div>`).join('');
-
-        const lastRead = localStorage.getItem('last_news_id') || 0;
-        if (ALL_NEWS[0].id > lastRead) document.getElementById('bell-dot').style.display = 'block';
-    }
-
-    // ЛОГИКА ПОИСКА (ИСПРАВЛЕННАЯ)
-    document.getElementById('search-input').addEventListener('input', (e) => {
-        const val = e.target.value.toLowerCase();
-        const res = document.getElementById('suggestions');
-        res.innerHTML = '';
-        if(!val) return;
-        
-        services.filter(s => s.name.toLowerCase().includes(val) || s.tags.some(t => t.includes(val)))
-            .forEach(s => {
-                const item = document.createElement('div');
-                item.style.padding = '20px';
-                item.style.background = 'rgba(255,255,255,0.05)';
-                item.style.cursor = 'pointer';
-                item.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
-                item.innerHTML = `<i class="fas ${s.icon}" style="color:var(--accent); margin-right:15px"></i> ${s.name}`;
-                item.onclick = () => window.open(s.url, '_blank');
-                res.appendChild(item);
-            });
-    });
-
-    function toggleNewsDropdown() {
-        const d = document.getElementById('news-overlay');
-        d.classList.toggle('show');
-        if(d.classList.contains('show')) {
-            document.getElementById('bell-dot').style.display = 'none';
-            localStorage.setItem('last_news_id', ALL_NEWS[0].id);
-        }
-    }
-
-    function toggleSearch() {
-        const m = document.getElementById('search-modal');
-        m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
-        if(m.style.display === 'flex') document.getElementById('search-input').focus();
-    }
-
-    function toggleDonate() { window.open('https://yoomoney.ru/to/4100119394883694', '_blank'); }
-
-    function copyEmail() {
-        navigator.clipboard.writeText('wertq6306@gmail.com');
-        alert('Email скопирован!');
-    }
-
-    // ГОЛОС
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'ru-RU';
-    function toggleVoice() { try { recognition.start(); } catch(e) {} }
-    recognition.onstart = () => document.getElementById('mic-btn').style.background = '#ff4444';
-    recognition.onend = () => document.getElementById('mic-btn').style.background = 'var(--accent)';
-    recognition.onresult = (e) => {
-        const speech = e.results[0][0].transcript.toLowerCase();
-        const found = services.find(s => speech.includes(s.name.toLowerCase()) || s.tags.some(t => speech.includes(t)));
-        if(found) window.open(found.url, '_blank');
-    };
-
-    // ФОН CANVAS
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    let pts = [];
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    window.onresize = resize; resize();
-    for(let i=0; i<60; i++) pts.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, vx:(Math.random()-0.5)*0.5, vy:(Math.random()-0.5)*0.5});
-    function draw() {
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        pts.forEach((p, i) => {
-            p.x+=p.vx; p.y+=p.vy;
-            if(p.x<0||p.x>canvas.width) p.vx*=-1; if(p.y<0||p.y>canvas.height) p.vy*=-1;
-            ctx.fillStyle = 'rgba(255,140,0,0.3)'; ctx.beginPath(); ctx.arc(p.x,p.y,1.5,0,Math.PI*2); ctx.fill();
-            for(let j=i+1; j<pts.length; j++) {
-                let d = Math.hypot(p.x-pts[j].x, p.y-pts[j].y);
-                if(d<150) { ctx.strokeStyle=`rgba(255,140,0,${0.1*(1-d/150)})`; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(pts[j].x,pts[j].y); ctx.stroke(); }
-            }
-        });
-        requestAnimationFrame(draw);
-    }
-    draw();
-    init();
-
-</script>
-
+    <script src="data/services.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>
